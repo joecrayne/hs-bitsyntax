@@ -1,4 +1,3 @@
-{-# OPTIONS_GHC -fth -ffi #-}
 -- | This module contains fuctions and templates for building up and breaking
 --   down packed bit structures. It's something like Erlang's bit-syntax (or,
 --   actually, more like Python's struct module).
@@ -218,7 +217,7 @@ data ReadType = -- | An unsigned number of some number of bytes. Valid
                 --   decoding to return the trailing part at that point.
                 Rest
 
-fromBytes :: (Bits a) => [a] -> a
+fromBytes :: (Num a, Bits a) => [a] -> a
 fromBytes input =
     let dofb accum [] = accum
         dofb accum (x:xs) = dofb ((shiftL accum 8) .|. x) xs
@@ -386,6 +385,10 @@ decGetName :: Dec -> Name
 decGetName (ValD (VarP name) _ _) = name
 decGetName _                      = undefined -- Error!
 
+-- | Example usage:
+--
+-- > parsePascalString :: Monad m => ByteString -> m (Word16, ByteString)
+-- > parsePascalString bs = $( bitSyn [UnsignedLE 2, LengthPrefixed] ) bs
 bitSyn :: [ReadType] -> Q Exp
 bitSyn elements = do
     inputname <- newName "input"
@@ -409,10 +412,12 @@ prop_bitPacking fields =
     packed = bits $ PackBits fields'
     postvalues = decodeBits (map (fromIntegral . fst) fields') packed
 
+#if !MIN_VERSION_QuickCheck(2,1,2)
 instance Arbitrary Word16 where
   arbitrary = (arbitrary :: Gen Int) >>= return . fromIntegral
 instance Arbitrary Word32 where
   arbitrary = (arbitrary :: Gen Int) >>= return . fromIntegral
+#endif
 
 -- | This only works on little-endian machines as it checks that the foreign
 --   functions (htonl and htons) match the native ones
