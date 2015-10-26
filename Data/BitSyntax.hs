@@ -224,14 +224,20 @@ fromBytes input =
         in
         dofb 0 $ reverse input
 
+
+-- | First byte of a 'BS.ByteString'.
 decodeU8 :: BS.ByteString -> Word8
 decodeU8 = fromIntegral . head . BS.unpack
+-- | Convert little-endian 'BS.ByteString' to big-endian 'Word16'.
 decodeU16 :: BS.ByteString -> Word16
 decodeU16 = htons . fromBytes . map fromIntegral . BS.unpack
+-- | Convert little-endian 'BS.ByteString' to big-endian 'Word32'.
 decodeU32 :: BS.ByteString -> Word32
 decodeU32 = htonl . fromBytes . map fromIntegral . BS.unpack
+-- | Convert little-endian 'BS.ByteString' to little-endian 'Word16'.
 decodeU16LE :: BS.ByteString -> Word16
 decodeU16LE = littleEndian16 . fromBytes . map fromIntegral . BS.unpack
+-- | Convert little-endian 'BS.ByteString' to little-endian 'Word32'.
 decodeU32LE :: BS.ByteString -> Word32
 decodeU32LE = littleEndian32 . fromBytes . map fromIntegral . BS.unpack
 
