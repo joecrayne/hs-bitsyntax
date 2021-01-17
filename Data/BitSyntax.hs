@@ -282,8 +282,11 @@ readElement (stmts, inputname, tuplenames) (Context funcname) = do
   let stmt = BindS (TupP [VarP valname, VarP restname])
                    (AppE (AppE (VarE funcname)
                                (VarE inputname))
+#if MIN_VERSION_template_haskell(2,16,0)
+                         (TupE $ map (Just . VarE) $ reverse tuplenames))
+#else
                          (TupE $ map VarE $ reverse tuplenames))
-
+#endif
   return (stmt : stmts, restname, valname : tuplenames)
 
 readElement (stmts, inputname, tuplenames) (Fixed n) = do
